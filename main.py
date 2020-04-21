@@ -13,11 +13,10 @@ def get_users():
             users = json.load(json_file)
         return users
     except FileNotFoundError:
-        QMessageBox.critical(MainWindow, "Error", "No hay usuarios registrados, registrando root")
+        QMessageBox.warning(None, "Error", "No hay usuarios registrados, registrando root admin")
         user = "root"
         p = hashlib.sha512(b'admin').hexdigest()
         register_user({user:p})
-        return
 
 def register_user(users):
     with open("users.json", "w+") as write_file:
@@ -33,6 +32,7 @@ class MainWindow(QMainWindow, logged_MainWindow, login_MainWindow):
 
     def StartLoginWindow(self):
         self.loginWindow.setupUi(self)
+        get_users()
         self.loginWindow.pushButton.clicked.connect(self.login)
         self.loginWindow.pushButton_2.clicked.connect(self.sign_in)
         self.show()
