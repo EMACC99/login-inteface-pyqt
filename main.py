@@ -14,7 +14,7 @@ def get_users():
         return users
     except FileNotFoundError:
         QMessageBox.warning(None, "Error", "No hay usuarios registrados, registrando root admin")
-        user = "root"
+        user = hashlib.sha512(b"root").hexdigest()
         p = hashlib.sha512(b'admin').hexdigest()
         register_user({user:p})
 
@@ -37,19 +37,21 @@ class MainWindow(QMainWindow, logged_MainWindow, login_MainWindow):
         self.loginWindow.pushButton_2.clicked.connect(self.sign_in)
         self.show()
 
-    def StartLoggedWindow(self):
+    def StartLoggedWindow(self,user):
         self.loggedWindow.setupUi(self)
+        self.loggedWindow.label.setText("Hola " + user)
         self.loggedWindow.pushButton.clicked.connect(self.StartLoginWindow)
         self.show()
         
     def login(self):
         users = get_users()
-        user = self.loginWindow.lineEdit.text()
+        user_text = self.loginWindow.lineEdit.text()
+        user = hashlib.sha512(user_text.encode()).hexdigest()
         password = hashlib.sha512(self.loginWindow.lineEdit_2.text().encode()).hexdigest()
 
         try:
             if users[user] == password:
-                self.StartLoggedWindow()
+                self.StartLoggedWindow(user_text)
             else:
                 QMessageBox.critical(self, "Error", "Wrong password")
                 self.loginWindow.lineEdit_2.setText("")
@@ -63,7 +65,7 @@ class MainWindow(QMainWindow, logged_MainWindow, login_MainWindow):
     def sign_in(self):
         users=get_users()
         if self.loginWindow.lineEdit.text() != "" or self.loginWindow.lineEdit_2.text() != "":
-            user = self.loginWindow.lineEdit.text()
+            user = hashlib.sha512(self.loginWindow.lineEdit.text().encode()).hexdigest()
             password = hashlib.sha512(self.loginWindow.lineEdit_2.text().encode()).hexdigest()
             if user not in users:
                 users.update({user:password})
@@ -76,7 +78,7 @@ class MainWindow(QMainWindow, logged_MainWindow, login_MainWindow):
             QMessageBox.information(self, "Registro", "Ususario Registrado Exitosamente")
             self.StartLoggedWindow()
         else:
-            QMessageBox.critical(self, "Erro", "campos en blanco")
+            QMessageBox.critical(self, "Error", "campos en blanco")
             self.loginWindow.lineEdit.setText("")
             self.loginWindow.lineEdit_2.setText("")
             return
